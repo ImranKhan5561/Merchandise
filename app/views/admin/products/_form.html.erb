@@ -1,0 +1,263 @@
+<div class="container mx-auto px-4 ">
+  <div class="bg-white shadow rounded-lg p-6">
+    <%= form_with(model: [:admin, product], class: "space-y-6") do |form| %>
+      <% if product.errors.any? %>
+        <div class="bg-red-50 text-red-600 p-4 rounded mb-4">
+          <ul>
+            <% product.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
+          <%= form.text_field :name, class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+        </div>
+
+        <div>
+          <%= form.label :slug, class: "block text-sm font-medium text-gray-700" %>
+          <%= form.text_field :slug, class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+        </div>
+
+        <div class="col-span-2">
+          <%= form.label :description, class: "block text-sm font-medium text-gray-700" %>
+          <%= form.text_area :description, rows: 3, class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+        </div>
+
+        <div>
+           <%= form.label :category_id, class: "block text-sm font-medium text-gray-700" %>
+           <%= form.collection_select :category_id, Category.all, :id, :name, { prompt: "Select Category" }, { class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" } %>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= form.label :base_price, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.number_field :base_price, step: "0.01", class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+          </div>
+          <div>
+            <%= form.label :product_type, class: "block text-sm font-medium text-gray-700" %>
+            <%= form.select :product_type, [['Simple', 'simple'], ['Variable', 'variable']], {}, class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+          </div>
+
+          <!-- Option Types Section - Only for Variable Products -->
+          <div class="col-span-2 border-t border-gray-200 pt-4 mt-2" 
+               id="option-types-section"
+               style="<%= product.product_type != 'variable' ? 'display: none;' : '' %>">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">🔀 Option Types (for Variable Products)</h3>
+            <p class="text-xs text-gray-500 mb-4">
+              Select which option types create variants (e.g., Color, Size).
+              <a href="/admin/option_types" class="text-indigo-600 hover:underline">Manage Option Types</a>
+            </p>
+            
+            <% if OptionType.any? %>
+              <% available_option_types = OptionType.for_category(product.category).includes(:option_values) %>
+              <% if available_option_types.any? %>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <% available_option_types.each do |ot| %>
+                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <%= check_box_tag "product[option_type_ids][]", ot.id, 
+                          product.option_type_ids.include?(ot.id), 
+                          class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+                      <div class="ml-2">
+                        <span class="text-sm font-medium text-gray-700"><%= ot.presentation %></span>
+                        <span class="block text-xs text-gray-400"><%= ot.option_values.count %> values</span>
+                        <% if ot.category_id.nil? %>
+                          <span class="text-xs text-green-600">Global</span>
+                        <% end %>
+                      </div>
+                    </label>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="text-sm text-amber-600">No option types available for this category. <a href="/admin/option_types/new" class="underline">Create one</a></p>
+              <% end %>
+              <%= hidden_field_tag "product[option_type_ids][]", "" %>
+              
+              <% if product.persisted? && product.option_types.any? %>
+                <!-- Manage Variants Link -->
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p class="text-sm text-blue-800">
+                    📦 <strong>Manage variants and upload variant images</strong> in the 
+                    <%= link_to "Variants section", admin_product_variants_path(product), class: "underline font-medium" %>
+                  </p>
+                </div>
+                
+                <!-- Visual Discriminator -->
+                <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <label class="block text-sm font-medium text-gray-800 mb-1">
+                    🖼️ Image Switcher (Visual Discriminator)
+                  </label>
+                  <p class="text-xs text-gray-600 mb-2">
+                    <strong>Which option changes the product image?</strong><br>
+                    Example: Select "Color" → when customer picks "Red", the image shows the red variant.
+                  </p>
+                  <%= form.collection_select :visual_option_type_id, 
+                      product.option_types, 
+                      :id, 
+                      :presentation, 
+                      { include_blank: "None (images don't change)" }, 
+                      { class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" } %>
+                </div>
+              <% elsif product.persisted? %>
+                <p class="mt-3 text-sm text-amber-600">
+                  ⚠️ Select at least one option type and save to manage variants.
+                </p>
+              <% end %>
+            <% else %>
+              <p class="text-sm text-gray-500 italic">
+                No option types created yet. 
+                <a href="/admin/option_types/new" class="text-indigo-600 hover:underline">Create one</a>
+              </p>
+            <% end %>
+          </div>
+          
+          <script>
+            // Toggle Option Types section based on product type
+            document.querySelector('[name="product[product_type]"]')?.addEventListener('change', function(e) {
+              const section = document.getElementById('option-types-section');
+              if (section) {
+                section.style.display = e.target.value === 'variable' ? '' : 'none';
+              }
+            });
+          </script>
+        </div>
+
+        <!-- Brand & Pricing Section -->
+        <div class="col-span-2 border-t border-gray-200 pt-4 mt-2">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Brand & Pricing</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <%= form.label :brand, class: "block text-sm font-medium text-gray-700" %>
+              <%= form.text_field :brand, placeholder: "e.g. Nike, Apple", class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+            </div>
+            
+            <div>
+              <%= form.label :compare_at_price, "Compare At Price", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.number_field :compare_at_price, step: "0.01", placeholder: "Original price", class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+              <p class="text-xs text-gray-500 mt-1">Strike-through price (must be higher than base price)</p>
+            </div>
+            
+            <div>
+              <%= form.label :discount_percentage, "Discount %", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.number_field :discount_percentage, min: 0, max: 100, placeholder: "Auto-calculated if empty", class: "mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+              <p class="text-xs text-gray-500 mt-1">Leave blank to auto-calculate from prices</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-2 flex gap-6">
+          <label class="flex items-center">
+            <%= form.check_box :active, class: "rounded p-2 border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+            <span class="ml-2 text-sm text-gray-600">Active</span>
+          </label>
+          
+          <label class="flex items-center">
+            <%= form.check_box :featured, class: "rounded p-2 border-gray-300 text-yellow-600 shadow-sm focus:border-yellow-300 focus:ring focus:ring-yellow-200 focus:ring-opacity-50" %>
+            <span class="ml-2 text-sm text-gray-600">⭐ Featured Product</span>
+          </label>
+        </div>
+        <div class="col-span-2" data-controller="image-preview">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+          
+          <!-- Drag & Drop Zone -->
+          <div 
+            class="border-2 border-dashed border-gray-300 rounded-lg p-12 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer"
+            data-action="click->image-preview#triggerInput"
+          >
+            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div class="mt-4 flex text-sm text-gray-600">
+              <span class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                <span>Drag & drop images here, or click to select</span>
+              </span>
+            </div>
+            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+            
+            <button type="button" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 focus:outline-none">
+              Choose Files
+            </button>
+          </div>
+
+          <!-- Hidden File Input (Moved outside to prevent recursive click) -->
+          <%= form.file_field :images, multiple: true, class: "hidden", data: { image_preview_target: "input", action: "change->image-preview#preview" } %>
+
+          <!-- Previews Container (New) -->
+          <div data-image-preview-target="previewContainer" class="mt-4"></div>
+
+          <!-- Existing Images (only show for persisted products) -->
+          <% if product.persisted? && product.images.attached? %>
+             <div class="mt-6 border-t pt-4">
+               <h4 class="text-sm font-medium text-gray-700 mb-2">Existing Images</h4>
+               <div class="grid grid-cols-4 gap-4">
+                 <% product.images.each do |image| %>
+                   <div class="relative group" id="<%= dom_id(image) %>">
+                     <%= image_tag image, class: "h-24 w-24 object-cover rounded-md border" %>
+                     <%= link_to admin_attachment_path(image), 
+                          data: { turbo_method: :delete, turbo_confirm: "Delete this image?" }, 
+                          class: "absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition" do %>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                          </svg>
+                     <% end %>
+                   </div>
+                 <% end %>
+               </div>
+             </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-200 pt-6 mt-6" data-controller="nested-form">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Product Specifications</h3>
+        
+        <div data-nested-form-target="target">
+            <%= form.fields_for :product_specifications do |spec_form| %>
+                <div class="nested-fields grid grid-cols-2 gap-4 mb-2 items-center">
+                    <%= spec_form.hidden_field :_destroy %>
+                    <%= spec_form.text_field :name, placeholder: "Spec Name (e.g. Screen)", class: "rounded-md p-2 border-gray-300 shadow-sm" %>
+                    <div class="flex">
+                        <%= spec_form.text_field :value, placeholder: "Value (e.g. OLED)", class: "rounded-md p-2 border-gray-300 shadow-sm flex-grow" %>
+                        <button type="button" data-action="nested-form#remove" class="ml-2 text-red-600 hover:text-red-900">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                              </svg>
+                        </button>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+
+        <template data-nested-form-target="template">
+            <%= form.fields_for :product_specifications, ProductSpecification.new, child_index: 'NEW_RECORD' do |spec_form| %>
+                <div class="nested-fields grid grid-cols-2 gap-4 mb-2 items-center" data-new-record="true">
+                    <%= spec_form.hidden_field :_destroy %>
+                    <%= spec_form.text_field :name, placeholder: "Spec Name (e.g. Screen)", class: "rounded-md p-2 border-gray-300 shadow-sm" %>
+                     <div class="flex">
+                        <%= spec_form.text_field :value, placeholder: "Value (e.g. OLED)", class: "rounded-md p-2 border-gray-300 shadow-sm flex-grow" %>
+                        <button type="button" data-action="nested-form#remove" class="ml-2 text-red-600 hover:text-red-900">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                              </svg>
+                        </button>
+                    </div>
+                </div>
+            <% end %>
+        </template>
+
+        <button type="button" data-action="nested-form#add" class="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Add Specification
+        </button>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-6">
+        <%= link_to "Cancel", admin_products_path, class: "px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+        <%= form.submit class: "px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700" %>
+      </div>
+    <% end %>
+  </div>
+</div>

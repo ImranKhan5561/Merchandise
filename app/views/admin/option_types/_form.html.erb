@@ -1,0 +1,85 @@
+<div class="max-w-2xl mx-auto bg-white shadow rounded-lg p-6">
+  <%= form_with(model: [:admin, option_type], class: "space-y-6") do |form| %>
+    <% if option_type.errors.any? %>
+      <div class="bg-red-50 text-red-600 p-4 rounded">
+        <ul>
+          <% option_type.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <%= form.label :name, "Internal Name (e.g. tshirt-size)", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :name, class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+
+      <div>
+        <%= form.label :presentation, "Display Name (e.g. Size)", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :presentation, class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+      
+      <div class="col-span-2">
+        <%= form.label :category_id, "Category (Optional)", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.collection_select :category_id, Category.all, :id, :name, 
+            { prompt: "Global (Available for all categories)" }, 
+            { class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" } %>
+        <p class="text-xs text-gray-500 mt-1">Leave as "Global" to make this option type available for all products, or select a category to limit it.</p>
+      </div>
+    </div>
+
+    <!-- Nested Fields for Option Values -->
+    <div class="border-t border-gray-200 pt-4 mt-4" data-controller="nested-form">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Option Values</h3>
+        <button type="button" data-action="nested-form#add" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          Add Value
+        </button>
+      </div>
+      
+      <div data-nested-form-target="target" class="space-y-2">
+        <%= form.fields_for :option_values do |val_form| %>
+          <div class="nested-fields flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <%= val_form.hidden_field :_destroy %>
+            <%= val_form.text_field :value, placeholder: "Value (e.g. S)", class: "flex-1 p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+            <%= val_form.text_field :presentation, placeholder: "Display Label (e.g. Small)", class: "flex-1 p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+            <button type="button" data-action="nested-form#remove" class="text-red-600 hover:text-red-900 p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Template for new values -->
+      <template data-nested-form-target="template">
+        <%= form.fields_for :option_values, OptionValue.new, child_index: 'NEW_RECORD' do |val_form| %>
+          <div class="nested-fields flex items-center gap-3 p-3 bg-gray-50 rounded-lg" data-new-record="true">
+            <%= val_form.hidden_field :_destroy %>
+            <%= val_form.text_field :value, placeholder: "Value (e.g. S)", class: "flex-1 p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+            <%= val_form.text_field :presentation, placeholder: "Display Label (e.g. Small)", class: "flex-1 p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+            <button type="button" data-action="nested-form#remove" class="text-red-600 hover:text-red-900 p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        <% end %>
+      </template>
+      
+      <p class="text-xs text-gray-500 mt-3">Click "Add Value" to add more option values. Click ✕ to remove.</p>
+    </div>
+
+    <div class="flex justify-end space-x-3 pt-4">
+      <%= link_to "Cancel", admin_option_types_path, class: "px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+      <%= form.submit class: "px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 cursor-pointer" %>
+    </div>
+  <% end %>
+</div>
+

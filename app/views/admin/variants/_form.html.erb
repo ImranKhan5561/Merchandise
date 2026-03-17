@@ -1,0 +1,81 @@
+<div class="max-w-2xl mx-auto bg-white shadow rounded-lg p-6">
+  <%= form_with(model: [:admin, @product, @variant], class: "space-y-6") do |form| %>
+    <% if @variant.errors.any? %>
+      <div class="bg-red-50 text-red-600 p-4 rounded">
+        <ul>
+          <% @variant.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <%= form.label :sku, "SKU", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :sku, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+
+      <div>
+        <%= form.label :price, class: "block text-sm font-medium text-gray-700" %>
+        <%= form.number_field :price, step: "0.01", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+
+      <!-- Note about images -->
+      <div class="col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-sm text-blue-800">
+          📸 <strong>Images are managed via Image Sets</strong> on the 
+          <%= link_to "Variants page", admin_product_variants_path(@product), class: "underline font-medium" %>.
+          Upload images once per Color/Visual option, and all variants with that option share the images.
+        </p>
+      </div>
+
+      <div>
+        <%= form.label :stock_quantity, class: "block text-sm font-medium text-gray-700" %>
+        <%= form.number_field :stock_quantity, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+      
+       <div>
+        <%= form.label :weight, class: "block text-sm font-medium text-gray-700" %>
+        <%= form.number_field :weight, step: "0.01", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+      </div>
+      
+       <div class="col-span-2">
+          <label class="flex items-center">
+            <%= form.check_box :is_master, class: "rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+            <span class="ml-2 text-sm text-gray-600">Is Master Variant (Default)</span>
+          </label>
+        </div>
+    </div>
+
+    <div class="border-t border-gray-200 pt-4 mt-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Option Values</h3>
+      <p class="text-xs text-gray-500 mb-4">Select ONE value per option type to define this variant.</p>
+      
+      <div class="space-y-4">
+        <% @product.option_types.each do |option_type| %>
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><%= option_type.presentation %></label>
+            <div class="flex flex-wrap gap-3">
+              <% option_type.option_values.each do |ov| %>
+                <label class="inline-flex items-center px-3 py-2 border rounded-lg cursor-pointer hover:bg-white
+                  <%= @variant.option_value_ids.include?(ov.id) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300' %>">
+                  <%= radio_button_tag "variant[option_value_ids][]", ov.id, 
+                      @variant.option_value_ids.include?(ov.id),
+                      name: "variant[option_value_ids][#{option_type.id}]",
+                      class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" %>
+                  <span class="ml-2 text-sm text-gray-700"><%= ov.presentation %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex justify-end space-x-3 pt-4">
+      <%= link_to "Cancel", admin_product_variants_path(@product), class: "px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+      <%= form.submit class: "px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700" %>
+    </div>
+  <% end %>
+</div>

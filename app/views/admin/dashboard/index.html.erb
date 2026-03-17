@@ -1,0 +1,44 @@
+<% content_for :title, "Overview" %>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <!-- Stats Card 1 -->
+  <div class="bg-white rounded-lg shadow p-6 flex items-center">
+    <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+    </div>
+    <div>
+      <p class="text-sm font-medium text-gray-500">Total Products</p>
+      <p class="text-2xl font-bold text-gray-900"><%= Product.count %></p>
+    </div>
+  </div>
+
+  <!-- Stats Card 2 -->
+  <div class="bg-white rounded-lg shadow p-6 flex items-center">
+    <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+    </div>
+    <div>
+      <p class="text-sm font-medium text-gray-500">Categories</p>
+      <p class="text-2xl font-bold text-gray-900"><%= Category.count %></p>
+    </div>
+  </div>
+
+  <!-- Stats Card 3 -->
+  <div class="bg-white rounded-lg shadow p-6 flex items-center">
+    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    </div>
+    <div>
+      <p class="text-sm font-medium text-gray-500">Low Stock</p>
+      <p class="text-2xl font-bold text-gray-900"><%= Variant.where("stock_quantity < ?", 5).count %></p>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6">
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+  <div class="flex space-x-4">
+    <%= link_to "Add New Product", new_admin_product_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    <%= link_to "Create Category", new_admin_category_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+  </div>
+</div>
