@@ -1,4 +1,5 @@
 class Product < ApplicationRecord
+  has_many :order_items, dependent: :restrict_with_error
   belongs_to :category
 
   has_many_attached :images
@@ -7,7 +8,6 @@ class Product < ApplicationRecord
   has_many :product_option_types, dependent: :destroy
   has_many :option_types, through: :product_option_types
   has_many :product_specifications, dependent: :destroy
-  has_many :variant_image_sets, dependent: :destroy
   
   # For the "Master Variant" pattern
   has_one :master_variant, -> { where(is_master: true) }, class_name: "Variant"

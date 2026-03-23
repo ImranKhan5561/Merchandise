@@ -21,13 +21,31 @@
         <%= form.number_field :price, step: "0.01", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
       </div>
 
-      <!-- Note about images -->
-      <div class="col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p class="text-sm text-blue-800">
-          📸 <strong>Images are managed via Image Sets</strong> on the 
-          <%= link_to "Variants page", admin_product_variants_path(@product), class: "underline font-medium" %>.
-          Upload images once per Color/Visual option, and all variants with that option share the images.
-        </p>
+      <!-- Variant Images -->
+      <div class="col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h3 class="text-md font-medium text-gray-900 mb-4">📸 Variant Images</h3>
+        
+        <% if @variant.images.attached? %>
+          <div class="flex flex-wrap gap-4 mb-4">
+            <% @variant.images.each do |image| %>
+              <div class="relative group">
+                <%= image_tag image, class: "h-24 w-24 object-cover rounded shadow border" %>
+                <%= link_to admin_attachment_path(image), 
+                     data: { turbo_method: :delete, turbo_confirm: "Delete this image?" }, 
+                     class: "absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700" do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div>
+           <%= form.label :images, "Upload New Images", class: "block text-sm font-medium text-gray-700 mb-1" %>
+           <%= form.file_field :images, multiple: true, class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" %>
+        </div>
       </div>
 
       <div>

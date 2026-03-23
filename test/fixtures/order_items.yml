@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  order: one
+  product: one
+  variant: one
+  product_name: MyString
+  variant_sku: MyString
+  price: 9.99
+  quantity: 1
+  image_url: MyString
+
+two:
+  order: two
+  product: two
+  variant: two
+  product_name: MyString
+  variant_sku: MyString
+  price: 9.99
+  quantity: 1
+  image_url: MyString

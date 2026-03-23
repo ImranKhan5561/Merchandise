@@ -19,6 +19,25 @@ module Admin
       redirect_to admin_product_variants_path(@product), notice: "Visual settings saved."
     end
 
+    def bulk_update_images
+      authorize Variant
+      option_value_ids = params[:option_value_ids_key].to_s.split('-').map(&:to_i)
+      images = params[:images]
+      
+      if images.present? && option_value_ids.any?
+        variants = @product.variants.includes(:option_values).select do |v|
+          (option_value_ids - v.option_value_ids).empty?
+        end
+        
+        variants.each { |v| v.images.attach(images) }
+        notice = "Successfully attached #{images.count} image(s) to #{variants.count} variant(s)."
+      else
+        notice = "No images provided."
+      end
+      
+      redirect_to admin_product_variants_path(@product), notice: notice
+    end
+
     def new
       authorize Variant
       @variant = @product.variants.build

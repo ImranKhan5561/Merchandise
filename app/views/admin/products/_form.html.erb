@@ -29,7 +29,12 @@
 
         <div>
            <%= form.label :category_id, class: "block text-sm font-medium text-gray-700" %>
-           <%= form.collection_select :category_id, Category.all, :id, :name, { prompt: "Select Category" }, { class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" } %>
+           <% 
+             category_options = Category.where(parent_id: nil).includes(:children).flat_map do |parent|
+               [[parent.name, parent.id]] + parent.children.map { |child| ["  ↳ #{child.name}", child.id] }
+             end
+           %>
+           <%= form.select :category_id, category_options, { prompt: "Select Category" }, { class: "mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" } %>
         </div>
 
         <div class="grid grid-cols-2 gap-4">

@@ -74,3 +74,4 @@ gem "pundit", "~> 2.5"
 
 gem "devise-jwt"
 gem "rack-cors"
+gem "sib-api-v3-sdk"

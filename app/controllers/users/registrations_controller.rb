@@ -1,5 +1,13 @@
 class Users::RegistrationsController < Devise::RegistrationsController
+  skip_before_action :verify_authenticity_token
+  before_action :configure_sign_up_params, only: [:create]
   respond_to :json
+
+  protected
+
+  def configure_sign_up_params
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
+  end
 
   private
 
