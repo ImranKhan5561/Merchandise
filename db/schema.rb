@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_100128) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_27_111608) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -204,6 +204,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_100128) do
     t.index ["visual_option_type_id"], name: "index_products_on_visual_option_type_id"
   end
 
+  create_table "user_addresses", force: :cascade do |t|
+    t.string "address_line_1", null: false
+    t.string "address_line_2"
+    t.string "address_type", null: false
+    t.string "city", null: false
+    t.string "country", null: false
+    t.datetime "created_at", null: false
+    t.boolean "is_default", default: false
+    t.string "postal_code", null: false
+    t.string "state", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_user_addresses_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -236,6 +251,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_100128) do
     t.index ["sku"], name: "index_variants_on_sku", unique: true
   end
 
+  create_table "wishlist_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "product_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["product_id"], name: "index_wishlist_items_on_product_id"
+    t.index ["user_id", "product_id"], name: "index_wishlist_items_on_user_id_and_product_id", unique: true
+    t.index ["user_id"], name: "index_wishlist_items_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "users"
@@ -257,5 +282,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_100128) do
   add_foreign_key "product_specifications", "products"
   add_foreign_key "products", "categories"
   add_foreign_key "products", "option_types", column: "visual_option_type_id"
+  add_foreign_key "user_addresses", "users"
   add_foreign_key "variants", "products"
+  add_foreign_key "wishlist_items", "products"
+  add_foreign_key "wishlist_items", "users"
 end

@@ -14,4 +14,28 @@ class Api::ApplicationController < ActionController::Base
   def render_json(data, status: :ok)
     render json: data, status: status
   end
+
+  def serialize_product_card(product)
+    {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brand: product.brand,
+      base_price: product.base_price.to_f,
+      compare_at_price: product.compare_at_price&.to_f,
+      discount: product.calculated_discount,
+      on_sale: product.on_sale?,
+      free_shipping: product.free_shipping,
+      cover_image: image_urls(product.images).first,
+      tags: product.tags,
+      category: product.category&.name
+    }
+  end
+
+  def image_urls(images)
+    return [] unless images.attached?
+    images.map { |img| url_for(img) }
+  rescue
+    []
+  end
 end

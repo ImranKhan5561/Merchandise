@@ -12,7 +12,8 @@ class Api::CartsController < Api::ApplicationController
     product = variant.product
     
     cart_item = cart.cart_items.find_or_initialize_by(variant: variant, product: product)
-    cart_item.quantity = (cart_item.quantity || 0) + params[:quantity].to_i
+    base_qty = cart_item.new_record? ? 0 : cart_item.quantity
+    cart_item.quantity = base_qty + params[:quantity].to_i
     cart_item.price = variant.price
     
     if cart_item.save
@@ -20,6 +21,22 @@ class Api::CartsController < Api::ApplicationController
     else
       render json: { errors: cart_item.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def update_item
+    cart = current_user.cart
+    return render json: { error: 'Cart not found' }, status: :not_found unless cart
+
+    cart_item = cart.cart_items.find_by(variant_id: params[:variant_id])
+    return render json: { error: 'Item not found' }, status: :not_found unless cart_item
+
+    if params[:quantity].to_i <= 0
+      cart_item.destroy
+    else
+      cart_item.update(quantity: params[:quantity].to_i)
+    end
+
+    render json: cart_as_json(cart)
   end
 
   def remove_item
@@ -43,6 +60,7 @@ class Api::CartsController < Api::ApplicationController
           id: item.id,
           product_id: item.product_id,
           product_name: item.product.name,
+          product_slug: item.product.slug,
           variant_id: item.variant_id,
           sku: item.variant.sku,
           quantity: item.quantity,
@@ -57,6 +75,6 @@ class Api::CartsController < Api::ApplicationController
 
   def image_urls(images)
     return [] unless images.attached?
-    images.map { |img| Rails.application.routes.url_helpers.url_for(img) }
+    images.map { |img| url_for(img) }
   end
 end

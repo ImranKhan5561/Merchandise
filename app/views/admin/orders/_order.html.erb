@@ -1,0 +1,35 @@
+<tr id="<%= dom_id(order) %>" class="hover:bg-gray-50 transition-colors">
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+    <%= link_to order.order_number, admin_order_path(order), class: "hover:underline", data: { turbo: false } %>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+    <div class="flex flex-col">
+      <span class="font-medium"><%= order.user&.name || 'Guest' %></span>
+      <span class="text-xs text-gray-500"><%= order.user&.email %></span>
+    </div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <%= form_with model: [:admin, order], class: "flex items-center space-x-2" do |f| %>
+      <%= f.select :status, 
+          Order.statuses.keys.map { |k| [k.titleize, k] }, 
+          {}, 
+          class: "block w-full pl-3 pr-10 py-1 text-xs border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md", 
+          onchange: "this.form.requestSubmit()" %>
+      <% if local_assigns[:error] %>
+        <span class="text-xs text-red-500"><%= error %></span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-md
+      <%= order.payment_status == 'paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+      <%= order.payment_status.titleize %>
+    </span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+    <%= number_to_currency(order.total_amount) %>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    <%= order.created_at.strftime("%m/%d/%Y, %I:%M:%S %p") %>
+  </td>
+</tr>

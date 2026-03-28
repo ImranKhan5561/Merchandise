@@ -7,4 +7,9 @@ class Category < ApplicationRecord
   has_one_attached :image
 
   validates :name, presence: true
+
+  # Returns the category's ID and all its descendants' IDs
+  def subtree_ids
+    [id] + children.flat_map(&:subtree_ids)
+  end
 end

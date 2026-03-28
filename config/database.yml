@@ -91,9 +91,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: merchandise_production
-    username: merchandise
-    password: <%= ENV["MERCHANDISE_DATABASE_PASSWORD"] %>
+    url: <%= ENV["DATABASE_URL"] %>
   cache:
     <<: *primary_production
     database: merchandise_production_cache

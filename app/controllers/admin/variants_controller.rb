@@ -45,9 +45,13 @@ module Admin
 
     def create
       authorize Variant
-      @variant = @product.variants.build(variant_params)
+      @variant = @product.variants.build(variant_params.except(:images))
+      images = params[:variant][:images]
+      option_value_ids = extract_option_value_ids
 
       if @variant.save
+        @variant.option_values = OptionValue.where(id: option_value_ids) if option_value_ids.any?
+        @variant.images.attach(images) if images.present?
         redirect_to admin_product_variants_path(@product), notice: "Variant created successfully."
       else
         render :new, status: :unprocessable_entity
@@ -60,7 +64,12 @@ module Admin
 
     def update
       authorize @variant
-      if @variant.update(variant_params)
+      images = params[:variant][:images]
+      option_value_ids = extract_option_value_ids
+
+      if @variant.update(variant_params.except(:images))
+        @variant.option_values = OptionValue.where(id: option_value_ids) if option_value_ids.any?
+        @variant.images.attach(images) if images.present?
         redirect_to admin_product_variants_path(@product), notice: "Variant updated successfully."
       else
         render :edit, status: :unprocessable_entity
@@ -83,11 +92,19 @@ module Admin
       @variant = @product.variants.find(params[:id])
     end
 
+    # The form sends option_value_ids keyed by option_type_id:
+    # variant[option_value_ids][42] = "99"
+    # We extract just the values (the actual option_value_ids).
+    def extract_option_value_ids
+      raw = params.dig(:variant, :option_value_ids)
+      return [] unless raw.is_a?(ActionController::Parameters) || raw.is_a?(Hash)
+      raw.values.map(&:to_i).reject(&:zero?)
+    end
+
     def variant_params
       params.require(:variant).permit(
         :sku, :price, :stock_quantity, :weight, :is_master,
-        { images: [] },
-        option_value_ids: []
+        { images: [] }
       )
     end
   end

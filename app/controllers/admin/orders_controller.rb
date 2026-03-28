@@ -8,14 +8,19 @@ class Admin::OrdersController < Admin::BaseController
     authorize Order
     @order = Order.includes(order_items: [:product, :variant]).find(params[:id])
   end
-
   def update
     authorize Order
     @order = Order.find(params[:id])
     if @order.update(order_params)
-      redirect_to admin_order_path(@order), notice: "Order successfully updated."
+      respond_to do |format|
+        format.html { redirect_back fallback_location: admin_orders_path, notice: "Order successfully updated." }
+        format.turbo_stream { render turbo_stream: "" }
+      end
     else
-      redirect_to admin_order_path(@order), alert: "Failed to update order."
+      respond_to do |format|
+        format.html { redirect_back fallback_location: admin_orders_path, alert: "Failed to update order." }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("order_#{@order.id}", partial: "admin/orders/order", locals: { order: @order, error: "Failed to update." }) }
+      end
     end
   end
 

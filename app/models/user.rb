@@ -1,6 +1,8 @@
 class User < ApplicationRecord
-  has_many :addresses, dependent: :destroy
+  has_many :user_addresses, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
+  has_many :wishlist_items, dependent: :destroy
+  has_many :wishlisted_products, through: :wishlist_items, source: :product
   has_one :cart, dependent: :destroy
   include Devise::JWT::RevocationStrategies::JTIMatcher
 

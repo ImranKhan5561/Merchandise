@@ -4,7 +4,10 @@ class Api::ProductsController < Api::ApplicationController
                       .where(active: true)
 
     # Filters
-    products = products.where(category_id: params[:category_id]) if params[:category_id].present?
+    if params[:category_id].present?
+      category = Category.find_by(id: params[:category_id])
+      products = products.where(category_id: category.subtree_ids) if category
+    end
     products = products.featured if params[:featured] == 'true'
 
     # Sorting
@@ -41,6 +44,7 @@ class Api::ProductsController < Api::ApplicationController
     ).find_by!(slug: params[:slug])
 
     # Build option type → values map for variant pickers
+    used_option_value_ids = product.variants.flat_map(&:option_value_ids).uniq
     option_types = product.product_option_types.map do |pot|
       ot = pot.option_type
       {
@@ -48,7 +52,7 @@ class Api::ProductsController < Api::ApplicationController
         name: ot.name,
         presentation: ot.presentation,
         is_visual: pot.is_visual,
-        values: ot.option_values.map { |ov| { id: ov.id, value: ov.value, presentation: ov.presentation } }
+        values: ot.option_values.where(id: used_option_value_ids).map { |ov| { id: ov.id, value: ov.value, presentation: ov.presentation } }
       }
     end
 
@@ -58,6 +62,7 @@ class Api::ProductsController < Api::ApplicationController
         sku: v.sku,
         price: v.price.to_f,
         stock: v.stock_quantity,
+        is_master: v.is_master,
         option_value_ids: v.option_value_ids,
         images: image_urls(v.images)
       }
@@ -86,26 +91,7 @@ class Api::ProductsController < Api::ApplicationController
 
   private
 
-  def serialize_product_card(product)
-    {
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      brand: product.brand,
-      base_price: product.base_price.to_f,
-      compare_at_price: product.compare_at_price&.to_f,
-      discount: product.calculated_discount,
-      on_sale: product.on_sale?,
-      free_shipping: product.free_shipping,
-      cover_image: image_urls(product.images).first,
-      tags: product.tags,
-      category: product.category&.name
-    }
-  end
-
   def image_urls(images)
-    images.map { |img| url_for(img) }
-  rescue
-    []
+    super(images)
   end
 end

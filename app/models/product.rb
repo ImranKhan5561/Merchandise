@@ -5,6 +5,8 @@ class Product < ApplicationRecord
   has_many_attached :images
   
   has_many :variants, dependent: :destroy
+  has_many :wishlist_items, dependent: :destroy
+  has_many :wishlisted_by_users, through: :wishlist_items, source: :user
   has_many :product_option_types, dependent: :destroy
   has_many :option_types, through: :product_option_types
   has_many :product_specifications, dependent: :destroy

@@ -26,9 +26,17 @@ Rails.application.routes.draw do
     resources :categories, only: [:index]
     resource :cart, only: [:show] do
       post :add_item
+      patch :update_item
       delete :remove_item
     end
     post 'auth/verify_otp', to: 'auth#verify_otp'
+    get 'profile', to: 'profile#show'
+    patch 'profile', to: 'profile#update'
+    resources :addresses
+    resources :orders, only: [:create, :index, :show] do
+      patch :cancel, on: :member
+    end
+    resources :wishlist_items, only: [:index, :create, :destroy]
   end
 
 end
