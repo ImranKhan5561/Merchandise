@@ -1,11 +1,13 @@
 databases:
   - name: merchandise-db
+    plan: free
     databaseName: merchandise_production
     user: merchandise
 
 services:
   - type: web
     name: merchandise-backend
+    plan: free
     env: ruby
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec puma -C config/puma.rb"
