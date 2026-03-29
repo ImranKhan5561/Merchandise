@@ -88,7 +88,7 @@ end
 tshirts_cat  = Category.find_or_create_by!(name: 'T-Shirts',  parent: categories['Clothing'])
 hoodies_cat  = Category.find_or_create_by!(name: 'Hoodies',   parent: categories['Clothing'])
 phones_cat   = Category.find_or_create_by!(name: 'Phones',    parent: categories['Electronics'])
-laptops_cat  = Category.find_or_create_by!(name: 'Laptops',   parent: categories['Electronics'])
+Category.find_or_create_by!(name: 'Laptops',   parent: categories['Electronics'])
 sneakers_cat = Category.find_or_create_by!(name: 'Sneakers',  parent: categories['Footwear'])
 bags_cat     = Category.find_or_create_by!(name: 'Bags',      parent: categories['Accessories'])
 candles_cat  = Category.find_or_create_by!(name: 'Candles',   parent: categories['Home & Living'])
@@ -288,6 +288,9 @@ puts "Seeding iPhone 16 with variants..."
 
 iphone_16_desc = "The iPhone 16, launched in September 2024, combines sleek design with powerful performance. Featuring a 6.1-inch Super Retina XDR OLED display, the Apple A18 chip, and up to 512GB storage, it delivers lightning-fast speed and stunning visuals. With a 48MP main camera, advanced iOS 18, and durable Ceramic Shield protection, the iPhone 16 is built for both productivity and creativity. Available in Ultramarine, Teal, Pink, White, and Black, it balances elegance with cutting-edge technology."
 
+# ----------------------------------------------------------
+# I Phone 16 - Seeding Cleanup & fresh creation
+# ----------------------------------------------------------
 iphone = Product.find_or_create_by!(slug: 'iphone-16-ultimate-performance-style') do |p|
   p.name               = 'I phone 16'
   p.description        = iphone_16_desc
@@ -300,6 +303,22 @@ iphone = Product.find_or_create_by!(slug: 'iphone-16-ultimate-performance-style'
   p.tags               = %w[iphone new apple smartphone]
 end
 
+# CLEANUP: Identify canonical SKUs and safely remove others if possible
+canonical_skus = []
+colors_list = ['red', 'green', 'blue']
+storages_list = ['128GB', '256GB', '512GB']
+colors_list.each { |c| storages_list.each { |s| canonical_skus << "IPH16-#{c.upcase}-#{s}" } }
+
+iphone.variants.where.not(sku: canonical_skus).each do |v|
+  v.destroy
+rescue ActiveRecord::RecordNotDestroyed
+  # Keep legacy variants that have orders, but we won't show them in the primary UI if possible
+  puts "  ℹ️ Skipping legacy variant #{v.sku} (has orders)"
+end
+
+iphone.product_option_types.destroy_all
+iphone.product_specifications.destroy_all
+
 # Ensure Option Types & Values are updated
 color_ot_iphone = find_or_build_option_type(
   name: 'color', 
@@ -311,13 +330,12 @@ storage_ot_iphone = find_or_build_option_type(
   presentation: 'Storage', 
   values: { '128GB' => '128 GB', '256GB' => '256 GB', '512GB' => '512 GB' }
 )
-ram_ot_iphone = find_or_build_option_type(
-  name: 'ram', 
-  presentation: 'RAM', 
-  values: { '8GB' => '8GB' }
-)
 
 # Associate Options
+# RAM option removed as a selectable variant (it's now in specifications only)
+
+# Associate Options
+# (RAM removed from associations to match local UI)
 pot_color = ProductOptionType.find_or_initialize_by(product: iphone, option_type: color_ot_iphone)
 pot_color.update!(is_visual: true, position: 0)
 
