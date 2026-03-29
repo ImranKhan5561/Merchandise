@@ -304,7 +304,7 @@ end
 color_ot_iphone = find_or_build_option_type(
   name: 'color', 
   presentation: 'Color', 
-  values: { 'ultramarine' => 'Ultramarine', 'teal' => 'Teal', 'pink' => 'Pink', 'white' => 'White', 'black' => 'Black' }
+  values: { 'red' => 'Red', 'green' => 'Green', 'blue' => 'Blue' }
 )
 storage_ot_iphone = find_or_build_option_type(
   name: 'storage', 
@@ -318,9 +318,12 @@ ram_ot_iphone = find_or_build_option_type(
 )
 
 # Associate Options
-ProductOptionType.find_or_create_by!(product: iphone, option_type: color_ot_iphone) { |po| po.is_visual = true; po.position = 0 }
-ProductOptionType.find_or_create_by!(product: iphone, option_type: storage_ot_iphone) { |po| po.is_visual = false; po.position = 1 }
-ProductOptionType.find_or_create_by!(product: iphone, option_type: ram_ot_iphone) { |po| po.is_visual = false; po.position = 2 }
+pot_color = ProductOptionType.find_or_initialize_by(product: iphone, option_type: color_ot_iphone)
+pot_color.update!(is_visual: true, position: 0)
+
+pot_storage = ProductOptionType.find_or_initialize_by(product: iphone, option_type: storage_ot_iphone)
+pot_storage.update!(is_visual: false, position: 1)
+
 iphone.update!(visual_option_type_id: color_ot_iphone.id)
 
 # Specifications
@@ -339,47 +342,33 @@ end
 attach_image(iphone, 'https://images.unsplash.com/photo-1726059635073-631d8ce44e6b?w=1200', 'iphone-16-main.webp')
 
 # Variants Setup
-variants_data = [
-  { color: 'ultramarine', storage: '128GB', price: 699, stock: 25, urls: [
-    'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=800', 
-    'https://images.unsplash.com/photo-1592890288564-76628a30a657?w=800', 
-    'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800'
-  ] },
-  { color: 'teal', storage: '256GB', price: 799, stock: 15, urls: [
-    'https://images.unsplash.com/photo-1592890288564-76628a30a657?w=800', 
-    'https://images.unsplash.com/photo-1605236453023-294556ef830c?w=800', 
-    'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800'
-  ] },
-  { color: 'pink', storage: '128GB', price: 699, stock: 20, urls: [
-    'https://images.unsplash.com/photo-1556656793-062ff9878233?w=800', 
-    'https://images.unsplash.com/photo-1583573636246-18cb22463970?w=800', 
-    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'
-  ] },
-  { color: 'white', storage: '512GB', price: 899, stock: 10, urls: [
-    'https://images.unsplash.com/photo-1510557880182-3d4d3cba3f95?w=800', 
-    'https://images.unsplash.com/photo-1509741102003-ca64bfe5f069?w=800', 
-    'https://images.unsplash.com/photo-1534536281715-e28d76689b4d?w=800'
-  ] },
-  { color: 'black', storage: '256GB', price: 799, stock: 30, urls: [
-    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800', 
-    'https://images.unsplash.com/photo-1523206489230-c012cda4ceac?w=800', 
-    'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800'
-  ] }
-]
+colors = {
+  'red'   => ['https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=800', 'https://images.unsplash.com/photo-1592890288564-76628a30a657?w=800'],
+  'green' => ['https://images.unsplash.com/photo-1605236453023-294556ef830c?w=800', 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800'],
+  'blue'  => ['https://images.unsplash.com/photo-1510557880182-3d4d3cba3f95?w=800', 'https://images.unsplash.com/photo-1509741102003-ca64bfe5f069?w=800']
+}
 
-variants_data.each do |v_info|
-  sku = "IPH16-#{v_info[:color].upcase}-#{v_info[:storage]}"
-  v = Variant.find_or_create_by!(sku: sku) do |var|
-    var.product = iphone
-    var.price   = v_info[:price]
-    var.stock_quantity = v_info[:stock]
-  end
-  v.option_values.destroy_all
-  v.option_values |= [ov(color_ot_iphone, v_info[:color]), ov(storage_ot_iphone, v_info[:storage]), ov(ram_ot_iphone, '8GB')]
-  v.save!
-  
-  v_info[:urls].each_with_index do |url, idx|
-    attach_image(v, url, "iphone-16-#{v_info[:color]}-#{idx + 1}.webp")
+storage_prices = {
+  '128GB' => 699,
+  '256GB' => 799,
+  '512GB' => 899
+}
+
+colors.each do |color, urls|
+  storage_prices.each do |storage, price|
+    sku = "IPH16-#{color.upcase}-#{storage}"
+    v = Variant.find_or_initialize_by(sku: sku)
+    v.product = iphone
+    v.price   = price
+    v.stock_quantity = 20
+    
+    v.option_values.destroy_all
+    v.option_values |= [ov(color_ot_iphone, color), ov(storage_ot_iphone, storage)]
+    v.save!
+    
+    urls.each_with_index do |url, idx|
+      attach_image(v, url, "iphone-16-#{color}-#{idx + 1}.webp")
+    end
   end
 end
 
