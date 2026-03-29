@@ -10,7 +10,14 @@ require 'open-uri'
 # Helper: Attach image from URL
 # ----------------------------------------------------------
 def attach_image(record, url, filename)
-  return if record.send(record.respond_to?(:images) ? :images : :image).attached?
+  attachment_rel = record.respond_to?(:images) ? record.images : record.image
+  
+  if attachment_rel.attached?
+    blob = attachment_rel.respond_to?(:first) ? attachment_rel.first.blob : attachment_rel.blob
+    # Skip if it's already on Cloudinary. If it's on local disk from a previous deploy, purge it!
+    return if blob && blob.service_name.to_s.downcase == 'cloudinary'
+    attachment_rel.purge
+  end
   
   begin
     file = URI.open(url)
