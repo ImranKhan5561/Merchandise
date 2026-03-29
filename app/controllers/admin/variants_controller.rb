@@ -29,8 +29,18 @@ module Admin
           (option_value_ids - v.option_value_ids).empty?
         end
         
-        variants.each { |v| v.images.attach(uploaded_images) }
-        notice = "Successfully attached #{uploaded_images.count} image(s) to #{variants.count} variant(s)."
+        # Optimization: Upload the images ONCE to create blobs,
+        # then attach the SAME blobs to all variants to save storage (Cloudinary).
+        blobs = uploaded_images.map do |img|
+          ActiveStorage::Blob.create_and_upload!(
+            io: img,
+            filename: img.original_filename,
+            content_type: img.content_type
+          )
+        end
+        
+        variants.each { |v| v.images.attach(blobs) }
+        notice = "Successfully attached #{uploaded_images.count} shared image(s) to #{variants.count} variant(s)."
       else
         notice = "No images provided."
       end
