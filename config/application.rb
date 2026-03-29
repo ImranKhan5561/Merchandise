@@ -4,9 +4,9 @@ require "rails/all"
 
 # Explicitly require solid gems since they are set to `require: false` in Gemfile
 # to avoid early loading issues during Puma boot.
-require "solid_queue/engine"
-require "solid_cache/engine"
-require "solid_cable/engine"
+require "solid_queue"
+require "solid_cache"
+require "solid_cable"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
