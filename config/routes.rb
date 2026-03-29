@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  root to: proc { [200, { "Content-Type" => "application/json" }, [{ status: "ok" }.to_json]] }
   
   devise_for :users, controllers: {
     sessions: 'users/sessions',

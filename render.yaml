@@ -11,6 +11,7 @@ services:
     env: ruby
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec rails server -b 0.0.0.0 -p $PORT"
+    healthCheckPath: "/up"
     envVars:
       - key: SOLID_QUEUE_IN_PUMA
         value: "true"
