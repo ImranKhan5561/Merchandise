@@ -18,4 +18,8 @@ class VariantPolicy < ApplicationPolicy
   def update_visual_settings?
     user.admin?
   end
+
+  def bulk_update_images?
+    user.admin?
+  end
 end
