@@ -22,15 +22,15 @@ module Admin
     def bulk_update_images
       authorize Variant
       option_value_ids = params[:option_value_ids_key].to_s.split('-').map(&:to_i)
-      images = params[:images]
+      uploaded_images = Array.wrap(params[:images])
       
-      if images.present? && option_value_ids.any?
+      if uploaded_images.any? && option_value_ids.any?
         variants = @product.variants.includes(:option_values).select do |v|
           (option_value_ids - v.option_value_ids).empty?
         end
         
-        variants.each { |v| v.images.attach(images) }
-        notice = "Successfully attached #{images.count} image(s) to #{variants.count} variant(s)."
+        variants.each { |v| v.images.attach(uploaded_images) }
+        notice = "Successfully attached #{uploaded_images.count} image(s) to #{variants.count} variant(s)."
       else
         notice = "No images provided."
       end
