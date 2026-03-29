@@ -10,7 +10,7 @@ services:
     plan: free
     env: ruby
     buildCommand: "./bin/render-build.sh"
-    startCommand: "bundle exec puma -C config/puma.rb"
+    startCommand: "bundle exec rails server -b 0.0.0.0 -p $PORT"
     envVars:
       - key: SOLID_QUEUE_IN_PUMA
         value: "true"
