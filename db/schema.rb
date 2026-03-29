@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_27_111608) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_103134) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -128,6 +128,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_111608) do
 
   create_table "orders", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "customer_ip"
     t.string "order_number"
     t.string "payment_method"
     t.integer "payment_status"
@@ -267,14 +268,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_111608) do
   add_foreign_key "cart_items", "carts"
   add_foreign_key "cart_items", "products"
   add_foreign_key "cart_items", "variants"
-  add_foreign_key "carts", "users"
+  add_foreign_key "carts", "users", on_delete: :cascade
   add_foreign_key "categories", "categories", column: "parent_id"
   add_foreign_key "option_types", "categories"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "order_items", "variants"
-  add_foreign_key "orders", "users"
+  add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "product_option_types", "option_types"
   add_foreign_key "product_option_types", "products"
   add_foreign_key "product_option_values", "option_values"
@@ -282,7 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_111608) do
   add_foreign_key "product_specifications", "products"
   add_foreign_key "products", "categories"
   add_foreign_key "products", "option_types", column: "visual_option_type_id"
-  add_foreign_key "user_addresses", "users"
+  add_foreign_key "user_addresses", "users", on_delete: :cascade
   add_foreign_key "variants", "products"
   add_foreign_key "wishlist_items", "products"
   add_foreign_key "wishlist_items", "users"

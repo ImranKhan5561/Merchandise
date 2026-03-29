@@ -58,14 +58,17 @@
             </p>
             
             <% if OptionType.any? %>
-              <% available_option_types = OptionType.for_category(product.category).includes(:option_values) %>
+              <% available_option_types = OptionType.includes(:option_values).order(category_id: :desc, name: :asc) %>
               <% if available_option_types.any? %>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="option-types-container">
                   <% available_option_types.each do |ot| %>
-                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <% is_visible = ot.category_id.nil? || ot.category_id.to_s == product.category_id.to_s %>
+                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer option-type-item"
+                           data-category-id="<%= ot.category_id || 'global' %>"
+                           style="<%= is_visible ? '' : 'display: none;' %>">
                       <%= check_box_tag "product[option_type_ids][]", ot.id, 
                           product.option_type_ids.include?(ot.id), 
-                          class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+                          class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 option-type-checkbox" %>
                       <div class="ml-2">
                         <span class="text-sm font-medium text-gray-700"><%= ot.presentation %></span>
                         <span class="block text-xs text-gray-400"><%= ot.option_values.count %> values</span>
@@ -76,8 +79,11 @@
                     </label>
                   <% end %>
                 </div>
+                <p id="no-option-types-msg" class="text-sm text-amber-600 mt-2" style="display: none;">
+                  No option types available for this category. <a href="/admin/option_types/new" class="underline">Create one</a>
+                </p>
               <% else %>
-                <p class="text-sm text-amber-600">No option types available for this category. <a href="/admin/option_types/new" class="underline">Create one</a></p>
+                <p class="text-sm text-amber-600">No option types available. <a href="/admin/option_types/new" class="underline">Create one</a></p>
               <% end %>
               <%= hidden_field_tag "product[option_type_ids][]", "" %>
               
@@ -127,6 +133,38 @@
                 section.style.display = e.target.value === 'variable' ? '' : 'none';
               }
             });
+
+            // Filter Option Types based on selected category
+            document.querySelector('[name="product[category_id]"]')?.addEventListener('change', function(e) {
+              const selectedCategoryId = e.target.value;
+              const optionTypeItems = document.querySelectorAll('.option-type-item');
+              let visibleCount = 0;
+
+              optionTypeItems.forEach(item => {
+                const itemCatId = item.dataset.categoryId;
+                if (itemCatId === 'global' || itemCatId === selectedCategoryId) {
+                  item.style.display = '';
+                  visibleCount++;
+                } else {
+                  item.style.display = 'none';
+                  const checkbox = item.querySelector('.option-type-checkbox');
+                  if (checkbox) checkbox.checked = false;
+                }
+              });
+
+              const noOptionsMsg = document.getElementById('no-option-types-msg');
+              if (noOptionsMsg) {
+                noOptionsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+              }
+            });
+
+            // Ensure the initial state of option-types is correct
+            setTimeout(() => {
+              const catSelect = document.querySelector('[name="product[category_id]"]');
+              if (catSelect) {
+                catSelect.dispatchEvent(new Event('change'));
+              }
+            }, 50);
           </script>
         </div>
 

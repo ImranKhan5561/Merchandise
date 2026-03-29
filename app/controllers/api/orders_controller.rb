@@ -59,7 +59,8 @@ module Api
           shipping_city: address.city,
           shipping_state: address.state,
           shipping_pincode: address.postal_code,
-          shipping_country: address.country
+          shipping_country: address.country,
+          customer_ip: request.remote_ip
         )
 
         items.each do |item|

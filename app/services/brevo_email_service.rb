@@ -16,7 +16,7 @@ class BrevoEmailService
       sender: { name: 'Ethereal Boutique', email: sender_email || 'no-reply@ethereal.com' },
       to: [{ email: user.email, name: user.name }],
       subject: 'Your Ethereal Verification Code',
-      html_content: "
+      htmlContent: "
         <div style='font-family: serif; max-width: 600px; margin: 0 auto; padding: 40px; background: #FDFDFF; border: 1px solid #E6E1F9; border-radius: 40px;'>
           <h1 style='color: #1A142E; text-align: center; font-size: 32px;'>Welcome to Ethereal</h1>
           <p style='color: #6B6580; text-align: center; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;'>Your Luxury Collection Awaits</p>

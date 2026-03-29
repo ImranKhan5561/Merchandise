@@ -30,6 +30,7 @@ Rails.application.routes.draw do
       delete :remove_item
     end
     post 'auth/verify_otp', to: 'auth#verify_otp'
+    post 'auth/resend_otp', to: 'auth#resend_otp'
     get 'profile', to: 'profile#show'
     patch 'profile', to: 'profile#update'
     resources :addresses

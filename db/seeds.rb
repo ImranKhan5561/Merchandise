@@ -282,10 +282,112 @@ attach_image(bag, 'https://images.unsplash.com/photo-1547949003-9792a18a2601?w=8
 end
 
 # ----------------------------------------------------------
+# 9. iPhone 16 (Premium Variant Seeding)
+# ----------------------------------------------------------
+puts "Seeding iPhone 16 with variants..."
+
+iphone_16_desc = "The iPhone 16, launched in September 2024, combines sleek design with powerful performance. Featuring a 6.1-inch Super Retina XDR OLED display, the Apple A18 chip, and up to 512GB storage, it delivers lightning-fast speed and stunning visuals. With a 48MP main camera, advanced iOS 18, and durable Ceramic Shield protection, the iPhone 16 is built for both productivity and creativity. Available in Ultramarine, Teal, Pink, White, and Black, it balances elegance with cutting-edge technology."
+
+iphone = Product.find_or_create_by!(slug: 'iphone-16-ultimate-performance-style') do |p|
+  p.name               = 'I phone 16'
+  p.description        = iphone_16_desc
+  p.base_price         = 699.00
+  p.compare_at_price   = 799.00
+  p.brand              = 'Apple'
+  p.category           = phones_cat
+  p.product_type       = 'variant'
+  p.featured           = true
+  p.tags               = %w[iphone new apple smartphone]
+end
+
+# Ensure Option Types & Values are updated
+color_ot_iphone = find_or_build_option_type(
+  name: 'color', 
+  presentation: 'Color', 
+  values: { 'ultramarine' => 'Ultramarine', 'teal' => 'Teal', 'pink' => 'Pink', 'white' => 'White', 'black' => 'Black' }
+)
+storage_ot_iphone = find_or_build_option_type(
+  name: 'storage', 
+  presentation: 'Storage', 
+  values: { '128GB' => '128 GB', '256GB' => '256 GB', '512GB' => '512 GB' }
+)
+ram_ot_iphone = find_or_build_option_type(
+  name: 'ram', 
+  presentation: 'RAM', 
+  values: { '8GB' => '8GB' }
+)
+
+# Associate Options
+ProductOptionType.find_or_create_by!(product: iphone, option_type: color_ot_iphone) { |po| po.is_visual = true; po.position = 0 }
+ProductOptionType.find_or_create_by!(product: iphone, option_type: storage_ot_iphone) { |po| po.is_visual = false; po.position = 1 }
+ProductOptionType.find_or_create_by!(product: iphone, option_type: ram_ot_iphone) { |po| po.is_visual = false; po.position = 2 }
+iphone.update!(visual_option_type_id: color_ot_iphone.id)
+
+# Specifications
+iphone.product_specifications.destroy_all
+[
+  ['Display',      '6.1-inch Super Retina XDR OLED, 2556×1179 pixels'],
+  ['Processor',    'Apple A18 chip with 8GB LPDDR5X RAM'],
+  ['Storage Options', '128GB, 256GB, 512GB NVMe'],
+  ['Battery',      '3561 mAh, MagSafe and Qi2 wireless charging support'],
+  ['Connectivity', '5G enabled with Qualcomm Snapdragon X71 modem']
+].each do |name, value|
+  iphone.product_specifications.create!(name: name, value: value)
+end
+
+# Main Product Image
+attach_image(iphone, 'https://images.unsplash.com/photo-1726059635073-631d8ce44e6b?w=1200', 'iphone-16-main.webp')
+
+# Variants Setup
+variants_data = [
+  { color: 'ultramarine', storage: '128GB', price: 699, stock: 25, urls: [
+    'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=800', 
+    'https://images.unsplash.com/photo-1592890288564-76628a30a657?w=800', 
+    'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800'
+  ] },
+  { color: 'teal', storage: '256GB', price: 799, stock: 15, urls: [
+    'https://images.unsplash.com/photo-1592890288564-76628a30a657?w=800', 
+    'https://images.unsplash.com/photo-1605236453023-294556ef830c?w=800', 
+    'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800'
+  ] },
+  { color: 'pink', storage: '128GB', price: 699, stock: 20, urls: [
+    'https://images.unsplash.com/photo-1556656793-062ff9878233?w=800', 
+    'https://images.unsplash.com/photo-1583573636246-18cb22463970?w=800', 
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'
+  ] },
+  { color: 'white', storage: '512GB', price: 899, stock: 10, urls: [
+    'https://images.unsplash.com/photo-1510557880182-3d4d3cba3f95?w=800', 
+    'https://images.unsplash.com/photo-1509741102003-ca64bfe5f069?w=800', 
+    'https://images.unsplash.com/photo-1534536281715-e28d76689b4d?w=800'
+  ] },
+  { color: 'black', storage: '256GB', price: 799, stock: 30, urls: [
+    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800', 
+    'https://images.unsplash.com/photo-1523206489230-c012cda4ceac?w=800', 
+    'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800'
+  ] }
+]
+
+variants_data.each do |v_info|
+  sku = "IPH16-#{v_info[:color].upcase}-#{v_info[:storage]}"
+  v = Variant.find_or_create_by!(sku: sku) do |var|
+    var.product = iphone
+    var.price   = v_info[:price]
+    var.stock_quantity = v_info[:stock]
+  end
+  v.option_values.destroy_all
+  v.option_values |= [ov(color_ot_iphone, v_info[:color]), ov(storage_ot_iphone, v_info[:storage]), ov(ram_ot_iphone, '8GB')]
+  v.save!
+  
+  v_info[:urls].each_with_index do |url, idx|
+    attach_image(v, url, "iphone-16-#{v_info[:color]}-#{idx + 1}.webp")
+  end
+end
+
+# ----------------------------------------------------------
 # Done
 # ----------------------------------------------------------
 puts ""
-puts "✅ Seed complete with images!"
+puts "✅ Seed complete with high-quality images!"
 puts "  Categories : #{Category.count}"
 puts "  Products   : #{Product.count}"
 puts "  Variants   : #{Variant.count}"

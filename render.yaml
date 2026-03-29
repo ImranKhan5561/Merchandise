@@ -22,3 +22,7 @@ services:
         sync: false
       - key: RAILS_SERVE_STATIC_FILES
         value: "true"
+
+
+
+

@@ -1,5 +1,17 @@
 class Api::AuthController < Api::ApplicationController
-  skip_before_action :authenticate_user!, only: [:verify_otp], raise: false
+  skip_before_action :authenticate_user!, only: [:verify_otp, :resend_otp], raise: false
+
+  def resend_otp
+    user = User.find_by(email: params[:email])
+    if user
+      user.generate_otp
+      user.save(validate: false)
+      user.send_otp_email
+      render json: { status: { code: 200, message: 'OTP resent successfully.' } }, status: :ok
+    else
+      render json: { status: { message: 'User not found.' } }, status: :not_found
+    end
+  end
 
   def verify_otp
     user = User.find_by(email: params[:email])
