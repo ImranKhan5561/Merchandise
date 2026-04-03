@@ -26,7 +26,7 @@ class Api::ApplicationController < ActionController::Base
       discount: product.calculated_discount,
       on_sale: product.on_sale?,
       free_shipping: product.free_shipping,
-      cover_image: image_urls(product.images).first,
+      cover_image: product.images.attached? ? url_for(product.images.first) : nil,
       tags: product.tags,
       category: product.category&.name
     }

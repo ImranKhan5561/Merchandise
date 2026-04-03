@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       patch :cancel, on: :member
     end
     resources :wishlist_items, only: [:index, :create, :destroy]
+    resources :banners, only: [:index, :create, :update, :destroy]
   end
 
 end

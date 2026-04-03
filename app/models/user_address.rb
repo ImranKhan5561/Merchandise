@@ -1,7 +1,7 @@
 class UserAddress < ApplicationRecord
   belongs_to :user
 
-  validates :address_type, :address_line_1, :city, :state, :postal_code, :country, presence: true
+  validates :address_type, :address_line_1, :city, :state, :postal_code, :country, :full_name, :phone_number, presence: true
   
   before_save :ensure_single_default
 

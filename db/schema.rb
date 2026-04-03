@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_125500) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_03_103300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,6 +55,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_125500) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_addresses_on_user_id"
+  end
+
+  create_table "banners", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.string "badge_text"
+    t.string "button_link", default: "/browse"
+    t.string "button_text", default: "Discover Collection"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "image_url", null: false
+    t.integer "position", default: 0
+    t.string "subtitle"
+    t.string "text_align", default: "left"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_banners_on_active"
+    t.index ["position"], name: "index_banners_on_position"
   end
 
   create_table "cart_items", force: :cascade do |t|
@@ -129,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_125500) do
   create_table "orders", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "customer_ip"
+    t.text "order_notes"
     t.string "order_number"
     t.string "payment_method"
     t.integer "payment_status"
@@ -351,10 +369,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_125500) do
     t.string "address_line_1", null: false
     t.string "address_line_2"
     t.string "address_type", null: false
+    t.string "alternate_phone"
     t.string "city", null: false
     t.string "country", null: false
     t.datetime "created_at", null: false
+    t.string "full_name"
     t.boolean "is_default", default: false
+    t.string "landmark"
+    t.string "phone_number"
     t.string "postal_code", null: false
     t.string "state", null: false
     t.datetime "updated_at", null: false

@@ -45,6 +45,22 @@ User.find_or_create_by!(email: 'admin@example.com') do |u|
 end
 
 # ----------------------------------------------------------
+# Clothing Products
+# ----------------------------------------------------------
+puts "Creating Clothing..."
+
+# Master Product: Classic Tee
+tee = Product.find_or_create_by!(slug: 'classic-artisan-tee') do |p|
+  p.name        = 'The Artisan Tee'
+  p.description = 'A heavyweight, 100% organic cotton tee with a structured silhouette and hand-finished seams.'
+  p.base_price  = 45.00
+  p.category    = tshirts_cat
+  p.brand       = 'Ethereal'
+  p.tags        = ['cotton', 'organic', 'basic']
+  p.featured    = true
+end
+
+# ----------------------------------------------------------
 # Global Option Types
 # ----------------------------------------------------------
 puts "Creating Option Types..."
@@ -65,33 +81,96 @@ storage_ot = find_or_build_option_type(name: 'storage', presentation: 'Storage',
 material_ot = find_or_build_option_type(name: 'material', presentation: 'Material', values: { 'leather' => 'Leather', 'canvas' => 'Canvas', 'nylon' => 'Nylon', 'suede' => 'Suede' })
 
 # ----------------------------------------------------------
-# Categories
+# Categories (3-Level Hierarchy)
 # ----------------------------------------------------------
-puts "Creating Categories & Images..."
+puts "Creating Categories (3-Level Hierarchy)..."
 
-cat_images = {
-  'Clothing'      => 'https://images.unsplash.com/photo-1445205170230-053b830c6050?w=800',
-  'Electronics'   => 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800',
-  'Footwear'      => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800',
-  'Accessories'   => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
-  'Home & Living' => 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800'
-}
+cat_data = [
+  {
+    name: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1445205170230-053b830c6050?w=800',
+    children: [
+      {
+        name: 'Men',
+        children: ['T-Shirts', 'Shirts', 'Footwear']
+      },
+      {
+        name: 'Women',
+        children: ['Dresses', 'Tops', 'Handbags']
+      }
+    ]
+  },
+  {
+    name: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800',
+    children: [
+      {
+        name: 'Gadgets',
+        children: ['Smartphones', 'Laptops', 'Tablets']
+      },
+      {
+        name: 'Audio',
+        children: ['Headphones', 'Speakers']
+      }
+    ]
+  },
+  {
+    name: 'Home & Decor',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800',
+    children: [
+      {
+        name: 'Furniture',
+        children: ['Chairs', 'Tables', 'Sofas']
+      },
+      {
+        name: 'Decor',
+        children: ['Candles', 'Vases']
+      }
+    ]
+  },
+  {
+    name: 'Accessories',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
+    children: [
+      {
+        name: 'Lifestyle',
+        children: ['Bags', 'Watches', 'Sunglasses']
+      }
+    ]
+  }
+]
 
-categories = {}
-cat_images.each do |name, url|
-  cat = Category.find_or_create_by!(name: name)
-  attach_image(cat, url, "#{name.parameterize}.jpg")
-  categories[name] = cat
+# Helper to build tree recursively
+def seed_categories(data, parent = nil)
+  data.each do |item|
+    name = item.is_a?(String) ? item : item[:name]
+    cat = Category.find_or_create_by!(name: name, parent: parent)
+    
+    if item.is_a?(Hash) && item[:image]
+      attach_image(cat, item[:image], "#{name.parameterize}.jpg")
+    end
+
+    if item.is_a?(Hash) && item[:children]
+      seed_categories(item[:children], cat)
+    end
+  end
 end
 
-# Sub-categories
-tshirts_cat  = Category.find_or_create_by!(name: 'T-Shirts',  parent: categories['Clothing'])
-hoodies_cat  = Category.find_or_create_by!(name: 'Hoodies',   parent: categories['Clothing'])
-phones_cat   = Category.find_or_create_by!(name: 'Phones',    parent: categories['Electronics'])
-Category.find_or_create_by!(name: 'Laptops',   parent: categories['Electronics'])
-sneakers_cat = Category.find_or_create_by!(name: 'Sneakers',  parent: categories['Footwear'])
-bags_cat     = Category.find_or_create_by!(name: 'Bags',      parent: categories['Accessories'])
-candles_cat  = Category.find_or_create_by!(name: 'Candles',   parent: categories['Home & Living'])
+seed_categories(cat_data)
+
+# Extract leaf categories for easy assignment
+tshirts_cat    = Category.find_by!(name: 'T-Shirts')
+hoodies_cat    = Category.find_by!(name: 'Shirts') # mapped to shirts for this seed
+phones_cat     = Category.find_by!(name: 'Smartphones')
+laptops_cat    = Category.find_by!(name: 'Laptops')
+sneakers_cat   = Category.find_by!(name: 'Footwear')
+bags_cat       = Category.find_by!(name: 'Bags')
+candles_cat    = Category.find_by!(name: 'Candles')
+lifestyle_cat  = Category.find_by!(name: 'Lifestyle')
+dresses_cat    = Category.find_by!(name: 'Dresses')
+tops_cat       = Category.find_by!(name: 'Tops')
+handbags_cat   = Category.find_by!(name: 'Handbags')
+headphones_cat = Category.find_by!(name: 'Headphones')
 
 # ----------------------------------------------------------
 # Helper: create master variant
@@ -133,7 +212,7 @@ charger = Product.find_or_create_by!(slug: 'aura-wireless-charging-pad') do |p|
   p.base_price       = 24.99
   p.compare_at_price = 34.99
   p.brand            = 'AuraTech'
-  p.category         = categories['Electronics']
+  p.category         = phones_cat
   p.product_type     = 'simple'
   p.total_stock      = 200
 end
@@ -146,7 +225,7 @@ wallet = Product.find_or_create_by!(slug: 'slim-leather-card-wallet') do |p|
   p.description      = 'Minimalist genuine leather bifold wallet with 6 card slots.'
   p.base_price       = 34.99
   p.brand            = 'LuxLeather'
-  p.category         = categories['Accessories']
+  p.category         = lifestyle_cat
   p.product_type     = 'simple'
   p.total_stock      = 80
 end
@@ -210,14 +289,15 @@ tshirt.update!(visual_option_type_id: color_ot.id)
   attach_image(v, url, "tshirt-#{color}.jpg")
 end
 
-# 6. Urban Pullover Hoodie
-hoodie = Product.find_or_create_by!(slug: 'urban-pullover-hoodie') do |p|
-  p.name             = 'Urban Pullover Hoodie'
-  p.description      = 'A heavyweight 380gsm fleece hoodie with a kangaroo pocket.'
-  p.base_price       = 54.99
-  p.category         = hoodies_cat
-  p.product_type     = 'variant'
-  p.featured         = true
+# Master Product: Minimalist Hoodie
+hoodie = Product.find_or_create_by!(slug: 'minimalist-hoodie') do |p|
+  p.name        = 'Minimalist Oversized Hoodie'
+  p.description = 'Double-layered fleece hoodie with a clean, hardware-free design. Brushed interior for ultimate comfort.'
+  p.base_price  = 95.00
+  p.category    = hoodies_cat
+  p.brand       = 'Ethereal'
+  p.tags        = ['fleece', 'oversized', 'minimalist']
+  p.featured    = true
 end
 attach_image(hoodie, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800', 'hoodie-main.jpg')
 
@@ -258,6 +338,8 @@ attach_image(phone, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa
   v.save!
   attach_image(v, url, "phone-#{color}.jpg")
 end
+GC.start # Reclaim memory after variant creation
+
 
 # 8. Heritage Explorer Backpack
 bag = Product.find_or_create_by!(slug: 'heritage-backpack') do |p|
@@ -389,6 +471,102 @@ colors.each do |color, urls|
     end
   end
 end
+GC.start # Reclaim memory after iPhone variant creation
+
+
+# ----------------------------------------------------------
+# More Varied Products for Sub-categories
+# ----------------------------------------------------------
+puts "Creating more variety..."
+
+# Women - Dresses
+dress = Product.find_or_create_by!(slug: 'silk-slip-dress') do |p|
+  p.name        = 'Champagne Silk Slip Dress'
+  p.description = '100% mulberry silk dress with adjustable straps and a midi length. Effortless elegance.'
+  p.base_price  = 180.00
+  p.category    = dresses_cat
+  p.brand       = 'Ethereal'
+  p.tags        = ['silk', 'midi', 'evening']
+end
+attach_image(dress, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800', 'dress.jpg')
+
+# Electronics - Laptops
+laptop = Product.find_or_create_by!(slug: 'pro-artisan-laptop') do |p|
+  p.name        = 'Pro Artisan Laptop 14"'
+  p.description = 'M3 Max chip, 32GB RAM, 1TB SSD. The ultimate machine for creators.'
+  p.base_price  = 2499.00
+  p.category    = laptops_cat
+  p.brand       = 'EtherealTech'
+end
+attach_image(laptop, 'https://images.unsplash.com/photo-1517336712461-a49a1f1b1bcc?w=800', 'laptop.jpg')
+
+# Women - Handbags
+bag = Product.find_or_create_by!(slug: 'sculpted-leather-clutch') do |p|
+  p.name        = 'Sculpted Leather Clutch'
+  p.description = 'Hand-sculpted Italian leather clutch with a magnetic closure and gold-tone hardware.'
+  p.base_price  = 210.00
+  p.category    = handbags_cat
+  p.brand       = 'Ethereal'
+end
+attach_image(bag, 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800', 'handbag.jpg')
+
+# Women - Tops
+top = Product.find_or_create_by!(slug: 'ribbed-linen-tank') do |p|
+  p.name        = 'Ribbed Linen Tank'
+  p.description = 'Breathable linen-blend tank with a subtle ribbed texture. A summer essential.'
+  p.base_price  = 55.00
+  p.category    = tops_cat
+  p.brand       = 'Ethereal'
+end
+attach_image(top, 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800', 'tank.jpg')
+
+# Electronics - Audio
+headphone = Product.find_or_create_by!(slug: 'ethereal-studio-buds') do |p|
+  p.name        = 'Ethereal Studio Buds'
+  p.description = 'Crystal clear audio with 30-hour battery life and an ergonomic artisan fit.'
+  p.base_price  = 199.00
+  p.category    = headphones_cat
+  p.brand       = 'EtherealSound'
+end
+attach_image(headphone, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800', 'buds.jpg')
+
+# ----------------------------------------------------------
+# Banners
+# ----------------------------------------------------------
+puts "Seeding Banners..."
+[
+  {
+    title: "The Artisan Collection",
+    subtitle: "Spring Drop 2024",
+    badge_text: "NEW ARRIVAL",
+    description: "Experience the synergy of tradition and modern aesthetics. Each piece is hand-crafted with precision.",
+    image_url: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?q=80&w=2400&auto=format&fit=crop",
+    position: 1,
+    text_align: "left"
+  },
+  {
+    title: "Ethereal Minimalist",
+    subtitle: "Summer Essentials",
+    badge_text: "LIMITED EDITION",
+    description: "Discover the beauty of simplicity with our new minimalist collection. Lightweight fabrics for the modern soul.",
+    image_url: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2400&auto=format&fit=crop",
+    position: 2,
+    text_align: "center"
+  },
+  {
+    title: "Tech Meets Style",
+    subtitle: "Future Forward",
+    badge_text: "TRENDING",
+    description: "The latest in high-performance electronics wrapped in a shell of pure elegance. Upgrade your lifestyle today.",
+    image_url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2400&auto=format&fit=crop",
+    position: 3,
+    text_align: "right"
+  }
+].each do |banner_attrs|
+  Banner.find_or_create_by!(title: banner_attrs[:title]) do |b|
+    b.assign_attributes(banner_attrs)
+  end
+end
 
 # ----------------------------------------------------------
 # Done
@@ -398,3 +576,4 @@ puts "✅ Seed complete with high-quality images!"
 puts "  Categories : #{Category.count}"
 puts "  Products   : #{Product.count}"
 puts "  Variants   : #{Variant.count}"
+puts "  Banners    : #{Banner.count}"

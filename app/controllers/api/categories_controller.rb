@@ -1,19 +1,17 @@
 class Api::CategoriesController < Api::ApplicationController
   def index
     categories = Category.where(parent_id: nil).includes(:children)
-    render json: categories.map { |cat|
-      {
-        id: cat.id,
-        name: cat.name,
-        image_url: cat.image.attached? ? url_for(cat.image) : nil,
-        children: cat.children.map { |child| 
-          { 
-            id: child.id, 
-            name: child.name,
-            image_url: child.image.attached? ? url_for(child.image) : nil
-          } 
-        }
-      }
+    render json: categories.map { |cat| serialize_category(cat) }
+  end
+
+  private
+
+  def serialize_category(category)
+    {
+      id: category.id,
+      name: category.name,
+      image_url: category.image.attached? ? url_for(category.image) : nil,
+      children: category.children.map { |child| serialize_category(child) }
     }
   end
 end

@@ -53,8 +53,9 @@ module Api
           shipping_fee: shipping_fee,
           tax: tax,
           total_amount: total_amount,
-          shipping_name: current_user.name,
-          shipping_phone: "N/A", # Add phone to user/address later if needed
+          shipping_name: address.full_name.presence || current_user.name,
+          shipping_phone: address.phone_number.presence || "N/A",
+          order_notes: params[:order_notes],
           shipping_address: "\#{address.address_line_1} \#{address.address_line_2}".strip,
           shipping_city: address.city,
           shipping_state: address.state,

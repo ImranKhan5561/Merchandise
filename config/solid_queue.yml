@@ -1,0 +1,14 @@
+# Solid Queue Configuration for Resource-Constrained Environments (e.g., Render Free Tier 512MB)
+# Since we run Solid Queue inside the Puma process (SOLID_QUEUE_IN_PUMA=true),
+# we must ensure it doesn't spawn excessive threads or workers.
+
+production:
+  dispatchers:
+    - queue_names: "*"
+      batch_size: 20
+      polling_interval: 1.second
+  workers:
+    - queue_names: "*"
+      threads: 1 # Only one thread for background jobs to save memory
+      polling_interval: 0.1.second
+      processes: 1
