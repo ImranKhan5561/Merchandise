@@ -47,7 +47,7 @@ module Api
 
         order = current_user.orders.create!(
           payment_method: params[:payment_method] || 'cod',
-          payment_status: params[:payment_method] == 'cod' ? :unpaid : :paid,
+          payment_status: :unpaid,
           status: :pending,
           subtotal: subtotal,
           shipping_fee: shipping_fee,

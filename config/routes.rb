@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     end
     resources :wishlist_items, only: [:index, :create, :destroy]
     resources :banners, only: [:index, :create, :update, :destroy]
+    resources :payment_intents, only: [:create]
+    post "stripe_webhooks", to: "stripe_webhooks#create"
   end
 
 end

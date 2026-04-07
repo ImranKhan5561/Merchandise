@@ -1,9 +1,11 @@
 class Order < ApplicationRecord
   belongs_to :user
   has_many :order_items, dependent: :destroy
+  has_one :payment_intent, dependent: :destroy
 
   enum :status, { pending: 0, out_for_delivery: 1, delivered: 2, cancelled: 3 }
-  enum :payment_status, { unpaid: 0, paid: 1, refunded: 2 }
+  enum :payment_status, { unpaid: 0, paid: 1, refunded: 2, failed: 3 }
+  enum :payment_method, { cod: "cod", online: "online" }, prefix: :payment
 
   validates :order_number, presence: true, uniqueness: true
   validates :subtotal, :total_amount, presence: true, numericality: { greater_than_or_equal_to: 0 }

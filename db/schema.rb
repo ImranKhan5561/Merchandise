@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_03_103300) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_07_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -166,6 +166,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_103300) do
     t.bigint "user_id", null: false
     t.index ["order_number"], name: "index_orders_on_order_number"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "payment_intents", force: :cascade do |t|
+    t.integer "amount_cents"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "usd"
+    t.string "external_id"
+    t.jsonb "metadata", default: {}
+    t.bigint "order_id", null: false
+    t.jsonb "payment_method_details", default: {}
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["external_id"], name: "index_payment_intents_on_external_id", unique: true
+    t.index ["order_id"], name: "index_payment_intents_on_order_id"
+    t.index ["user_id"], name: "index_payment_intents_on_user_id"
   end
 
   create_table "product_option_types", force: :cascade do |t|
@@ -440,6 +456,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_103300) do
   add_foreign_key "order_items", "products"
   add_foreign_key "order_items", "variants"
   add_foreign_key "orders", "users", on_delete: :cascade
+  add_foreign_key "payment_intents", "orders"
+  add_foreign_key "payment_intents", "users"
   add_foreign_key "product_option_types", "option_types"
   add_foreign_key "product_option_types", "products"
   add_foreign_key "product_option_values", "option_values"
