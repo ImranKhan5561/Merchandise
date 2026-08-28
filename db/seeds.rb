@@ -7,7 +7,7 @@ require 'open-uri'
 # NOTE: Most seeds are commented out to save memory/time on Render Free Tier.
 # Run 'rails db:seed' to only populate Banners in production.
 
-=begin
+
 # ----------------------------------------------------------
 # Helper: Attach image from URL
 # ----------------------------------------------------------
@@ -33,20 +33,10 @@ def attach_image(record, url, filename)
   end
 end
 
-# ----------------------------------------------------------
-# Admin user
-# ----------------------------------------------------------
-puts "Creating Admin User..."
-User.find_or_create_by!(email: 'admin@example.com') do |u|
-  u.password              = 'password123'
-  u.password_confirmation = 'password123'
-  u.role                  = :admin
-  u.name                  = 'Admin'
-  u.is_verified           = true
-end
+# Deprecated admin seed removed - using env-based admin seed later
 
 # ... (rest of the products/categories) ...
-=end
+
 
 # ----------------------------------------------------------
 # Admin User (Active for Production/Render)
