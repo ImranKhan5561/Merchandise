@@ -103,3 +103,73 @@ puts "Seeding Banners..."
 end
 
 puts "✅ Banners seeded successfully!"
+puts "Seeding Categories..."
+
+clothing_category = Category.find_or_create_by!(name: "Clothing") do |c|
+  attach_image(c, "https://images.unsplash.com/photo-1520975916645-a625c83c6299?q=80&w=2400&auto=format&fit=crop", "clothing.jpg")
+end
+
+electronics_category = Category.find_or_create_by!(name: "Electronics") do |c|
+  attach_image(c, "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2400&auto=format&fit=crop", "electronics.jpg")
+end
+
+accessories_category = Category.find_or_create_by!(name: "Accessories") do |c|
+  attach_image(c, "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?q=80&w=2400&auto=format&fit=crop", "accessories.jpg")
+end
+
+puts "✅ Categories seeded successfully!"
+
+puts "Seeding Products..."
+
+# Clothing products
+shirt = Product.find_or_create_by!(name: "Classic White Shirt") do |p|
+  p.category = clothing_category
+  p.base_price = 49.99
+  p.description = "Elegant white shirt made from premium cotton."
+  p.total_stock = 100
+  p.slug = "classic-white-shirt"
+end
+attach_image(shirt, "https://images.unsplash.com/photo-1585110396000-7a0cae707951?q=80&w=2400&auto=format&fit=crop", "shirt_front.jpg")
+attach_image(shirt, "https://images.unsplash.com/photo-1576402114348-3511cce3c8fb?q=80&w=2400&auto=format&fit=crop", "shirt_back.jpg")
+
+jeans = Product.find_or_create_by!(name: "Blue Denim Jeans") do |p|
+  p.category = clothing_category
+  p.base_price = 79.99
+  p.description = "Comfortable blue denim jeans with a modern fit."
+  p.total_stock = 80
+  p.slug = "blue-denim-jeans"
+end
+attach_image(jeans, "https://images.unsplash.com/photo-1582719476602-264f271dd74a?q=80&w=2400&auto=format&fit=crop", "jeans_front.jpg")
+attach_image(jeans, "https://images.unsplash.com/photo-1567945715060-867e1c2f2c38?q=80&w=2400&auto=format&fit=crop", "jeans_back.jpg")
+
+# Electronics products
+laptop = Product.find_or_create_by!(name: "UltraSlim Laptop") do |p|
+  p.category = electronics_category
+  p.base_price = 1299.99
+  p.description = "Lightweight laptop with 16GB RAM, 512GB SSD, and stunning retina display."
+  p.total_stock = 30
+  p.slug = "ultraslim-laptop"
+end
+attach_image(laptop, "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=2400&auto=format&fit=crop", "laptop.jpg")
+
+smartphone = Product.find_or_create_by!(name: "ProMax Smartphone") do |p|
+  p.category = electronics_category
+  p.base_price = 999.99
+  p.description = "Flagship smartphone with triple camera system and 5G connectivity."
+  p.total_stock = 50
+  p.slug = "promax-smartphone"
+end
+attach_image(smartphone, "https://images.unsplash.com/photo-1512499617640-c2f9996178b5?q=80&w=2400&auto=format&fit=crop", "smartphone_front.jpg")
+attach_image(smartphone, "https://images.unsplash.com/photo-1509395176047-4a66953fd231?q=80&w=2400&auto=format&fit=crop", "smartphone_back.jpg")
+
+# Accessories products
+watch = Product.find_or_create_by!(name: "Classic Leather Watch") do |p|
+  p.category = accessories_category
+  p.base_price = 199.99
+  p.description = "Timeless leather strap watch with minimalist dial."
+  p.total_stock = 60
+  p.slug = "classic-leather-watch"
+end
+attach_image(watch, "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=2400&auto=format&fit=crop", "watch.jpg")
+
+puts "✅ Products seeded successfully!"
