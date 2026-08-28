@@ -49,6 +49,22 @@ end
 =end
 
 # ----------------------------------------------------------
+# Admin User (Active for Production/Render)
+# ----------------------------------------------------------
+puts "Seeding Admin User..."
+admin_email    = ENV.fetch("ADMIN_EMAIL", "admin@merchandise.com")
+admin_password = ENV.fetch("ADMIN_PASSWORD", "Admin@12345")
+
+User.find_or_create_by!(email: admin_email) do |u|
+  u.password              = admin_password
+  u.password_confirmation = admin_password
+  u.role                  = :admin
+  u.name                  = "Admin"
+  u.is_verified           = true
+end
+puts "✅ Admin user ready! Email: #{admin_email}"
+
+# ----------------------------------------------------------
 # Banners (Active for Production/Render)
 # ----------------------------------------------------------
 puts "Seeding Banners..."

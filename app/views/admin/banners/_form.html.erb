@@ -1,0 +1,177 @@
+<div class="max-w-3xl mx-auto">
+  <%= form_with(model: [:admin, banner], class: "space-y-6") do |f| %>
+
+    <%# Error messages %>
+    <% if banner.errors.any? %>
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <p class="font-semibold text-sm mb-1">Please fix the following errors:</p>
+        <ul class="list-disc list-inside text-sm space-y-0.5">
+          <% banner.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# ── Section 1: Core Content ── %>
+    <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
+      <div class="px-6 py-4">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Content</h3>
+      </div>
+
+      <div class="px-6 py-5 grid grid-cols-1 gap-5">
+
+        <%# Badge text %>
+        <div>
+          <%= f.label :badge_text, "Badge Label", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :badge_text,
+              placeholder: "e.g. New Arrival, Sale, Limited",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+          <p class="mt-1 text-xs text-gray-400">Small pill displayed above the title (optional).</p>
+        </div>
+
+        <%# Title %>
+        <div>
+          <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :title,
+              placeholder: "e.g. Summer Collection 2024",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+        </div>
+
+        <%# Subtitle %>
+        <div>
+          <%= f.label :subtitle, class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :subtitle,
+              placeholder: "e.g. Lightweight fabrics for warm days",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+        </div>
+
+        <%# Description %>
+        <div>
+          <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_area :description,
+              rows: 3,
+              placeholder: "Short description shown on the banner…",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none" %>
+        </div>
+
+      </div>
+    </div>
+
+    <%# ── Section 2: Image ── %>
+    <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
+      <div class="px-6 py-4">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Image</h3>
+      </div>
+
+      <div class="px-6 py-5 space-y-4" data-controller="image-preview">
+        <%= f.label :image, "Banner Image", class: "block text-sm font-medium text-gray-700 mb-2" %>
+        
+        <div 
+          class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer"
+          data-action="click->image-preview#triggerInput"
+        >
+          <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <p class="mt-2 text-sm text-gray-600">Click to upload image</p>
+          <p class="text-xs text-gray-500">PNG, JPG up to 5MB. Recommended size: 1400×700px.</p>
+        </div>
+        
+        <%= f.file_field :image, class: "hidden", data: { image_preview_target: "input", action: "change->image-preview#preview" } %>
+        <div data-image-preview-target="previewContainer" class="mt-3"></div>
+        
+        <% if banner.persisted? && banner.image.attached? %>
+          <div class="mt-3">
+            <p class="text-xs text-gray-500 mb-1">Current image:</p>
+            <div class="relative inline-block w-full">
+              <%= image_tag banner.image, class: "w-full h-44 object-cover rounded border" %>
+              <%= link_to admin_attachment_path(banner.image), 
+                   data: { turbo_method: :delete, turbo_confirm: "Delete this image?" }, 
+                   class: "absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-md hover:bg-red-700" do %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ── Section 3: Call-to-Action Button ── %>
+    <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
+      <div class="px-6 py-4">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Call-to-Action Button</h3>
+      </div>
+
+      <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :button_text, "Button Label", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :button_text,
+              placeholder: "e.g. Shop Now",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+        </div>
+
+        <div>
+          <%= f.label :button_link, "Button Link", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :button_link,
+              placeholder: "/browse",
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+        </div>
+      </div>
+    </div>
+
+    <%# ── Section 4: Display Settings ── %>
+    <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
+      <div class="px-6 py-4">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Display Settings</h3>
+      </div>
+
+      <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <%# Position %>
+        <div>
+          <%= f.label :position, "Position / Order", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.number_field :position,
+              min: 0,
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+          <p class="mt-1 text-xs text-gray-400">Lower number = shown first.</p>
+        </div>
+
+        <%# Text alignment %>
+        <div>
+          <%= f.label :text_align, "Text Alignment", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.select :text_align,
+              [["Left", "left"], ["Center", "center"], ["Right", "right"]],
+              {},
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %>
+        </div>
+
+        <%# Active toggle %>
+        <div class="flex flex-col justify-center">
+          <%= f.label :active, "Active", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <%= f.check_box :active,
+                class: "sr-only peer",
+                id: "active-toggle" %>
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            <span class="ml-3 text-sm text-gray-600">Show on homepage</span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <%# ── Form Actions ── %>
+    <div class="flex justify-end items-center space-x-3 pb-4">
+      <%= link_to "Cancel", admin_banners_path,
+          class: "px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" %>
+      <%= f.submit banner.persisted? ? "Save Changes" : "Create Banner",
+          class: "px-5 py-2 bg-indigo-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors cursor-pointer" %>
+    </div>
+
+  <% end %>
+</div>
+
+

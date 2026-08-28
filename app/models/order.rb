@@ -3,7 +3,18 @@ class Order < ApplicationRecord
   has_many :order_items, dependent: :destroy
   has_one :payment_intent, dependent: :destroy
 
-  enum :status, { pending: 0, out_for_delivery: 1, delivered: 2, cancelled: 3 }
+  enum :status, { 
+    pending: 0, 
+    processing: 4, 
+    shipped: 5, 
+    out_for_delivery: 1, 
+    delivered: 2, 
+    cancelled: 3, 
+    cancelled_by_user: 6, 
+    cancelled_by_admin: 7, 
+    return_requested: 8, 
+    returned: 9 
+  }
   enum :payment_status, { unpaid: 0, paid: 1, refunded: 2, failed: 3 }
   enum :payment_method, { cod: "cod", online: "online" }, prefix: :payment
 

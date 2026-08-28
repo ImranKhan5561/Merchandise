@@ -1,0 +1,15 @@
+<% content_for :title, "Edit Banner" %>
+
+<div class="mb-6 flex items-center space-x-3">
+  <%= link_to admin_banners_path, class: "text-gray-400 hover:text-gray-600 transition-colors" do %>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
+  <% end %>
+  <div>
+    <h2 class="text-xl font-bold text-gray-800">Edit Banner</h2>
+    <p class="text-sm text-gray-500 truncate max-w-md"><%= @banner.title %></p>
+  </div>
+</div>
+
+<%= render "form", banner: @banner %>

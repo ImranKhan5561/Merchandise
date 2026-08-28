@@ -5,9 +5,18 @@ class Api::BannersController < Api::ApplicationController
 
   def index
     @banners = Banner.active.ordered
+    
+    banners_json = @banners.map do |banner|
+      b_json = banner.as_json
+      if banner.image.attached?
+        b_json['image_url'] = url_for(banner.image)
+      end
+      b_json
+    end
+
     render json: {
       status: { code: 200, message: 'Banners fetched successfully.' },
-      data: { banners: @banners }
+      data: { banners: banners_json }
     }, status: :ok
   end
 

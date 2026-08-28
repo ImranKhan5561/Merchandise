@@ -56,7 +56,7 @@ class Api::ProductsController < Api::ApplicationController
       }
     end
 
-    variants = product.variants.where(is_master: false).map do |v|
+    variants = product.variants.map do |v|
       {
         id: v.id,
         sku: v.sku,

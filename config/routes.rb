@@ -15,6 +15,8 @@ Rails.application.routes.draw do
     resources :orders, only: [:index, :show, :update]
     resources :categories
     resources :option_types
+    resources :banners
+    resources :serviceable_pincodes
     resources :attachments, only: [:destroy]
     resources :products do
       resources :variants do
@@ -40,11 +42,15 @@ Rails.application.routes.draw do
     patch 'profile', to: 'profile#update'
     resources :addresses
     resources :orders, only: [:create, :index, :show] do
-      patch :cancel, on: :member
+      member do
+        patch :cancel
+        post :verify_payment
+      end
     end
     resources :wishlist_items, only: [:index, :create, :destroy]
     resources :banners, only: [:index, :create, :update, :destroy]
     resources :payment_intents, only: [:create]
+    get 'pincodes/check', to: 'pincodes#check'
     post "stripe_webhooks", to: "stripe_webhooks#create"
   end
 

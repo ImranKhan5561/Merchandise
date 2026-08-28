@@ -24,6 +24,10 @@ module Api
       address = current_user.user_addresses.find_by(id: params[:address_id])
       return render json: { error: "Invalid address" }, status: :unprocessable_entity unless address
 
+      unless ServiceablePincode.active.exists?(code: address.postal_code.to_s.strip)
+        return render json: { error: "Delivery is not available to the selected pin code (#{address.postal_code})" }, status: :unprocessable_entity
+      end
+
       subtotal = items.sum { |item| item.price * item.quantity }
       shipping_fee = subtotal > 50 ? 0 : 5.00
       tax = subtotal * 0.08
@@ -56,7 +60,7 @@ module Api
           shipping_name: address.full_name.presence || current_user.name,
           shipping_phone: address.phone_number.presence || "N/A",
           order_notes: params[:order_notes],
-          shipping_address: "\#{address.address_line_1} \#{address.address_line_2}".strip,
+          shipping_address: "#{address.address_line_1} #{address.address_line_2}".strip,
           shipping_city: address.city,
           shipping_state: address.state,
           shipping_pincode: address.postal_code,
@@ -94,6 +98,31 @@ module Api
       end
     end
 
+    def verify_payment
+      order = current_user.orders.find(params[:id])
+      intent = order.payment_intent
+
+      if intent.nil?
+        return render json: { error: 'No payment intent found' }, status: :not_found
+      end
+
+      begin
+        stripe_intent = Stripe::PaymentIntent.retrieve(intent.external_id)
+        
+        if stripe_intent.status == 'succeeded'
+          ActiveRecord::Base.transaction do
+            intent.update!(status: 'succeeded')
+            order.update!(payment_status: :paid, status: :pending)
+          end
+          render json: { success: true, payment_status: order.payment_status }
+        else
+          render json: { success: false, stripe_status: stripe_intent.status }
+        end
+      rescue Stripe::StripeError => e
+        render json: { error: e.message }, status: :unprocessable_entity
+      end
+    end
+
     def cancel
       order = current_user.orders.find(params[:id])
       
@@ -102,7 +131,7 @@ module Api
       end
 
       ActiveRecord::Base.transaction do
-        order.update!(status: :cancelled)
+        order.update!(status: :cancelled_by_user)
         
         order.order_items.each do |item|
           if item.variant
